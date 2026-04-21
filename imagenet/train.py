@@ -318,6 +318,12 @@ def main(args):
         test_stats = evaluate(data_loader_val, model, device)
         print(f"Accuracy of the network on the {len(dataset_val)} test images: {test_stats['acc1']:.1f}%")
 
+        # Always save latest checkpoint so training can be resumed after node failures
+        if args.output_dir:
+            misc.save_model(
+                args=args, model=model, model_without_ddp=model_without_ddp, optimizer=optimizer,
+                loss_scaler=loss_scaler, epoch='latest')
+
         if epoch > int(args.epochs - 20) and test_stats["acc1"] > max_accuracy:
             if args.output_dir:
                 misc.save_model(

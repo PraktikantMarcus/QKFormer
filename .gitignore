@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Training outputs (large files, not for version control)
+imagenet/output*/
+cifar100/output/
+imagenet/logs/
+cifar100/logs/
+imagenet/wget-log
+
+# Checkpoints
+*.pth
