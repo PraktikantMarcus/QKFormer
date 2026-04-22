@@ -11,21 +11,22 @@
 #SBATCH --error=logs/qkformer_cifar10_%j.err
 
 # ─── Environment setup ──────────────────────────────────────────────────────
-module load cuda/11.7
-# conda activate qkformer
-# source /path/to/venv/bin/activate
+module load cuda/12.3
+
+source /home/fritzsche/qkformer/bin/activate
 
 mkdir -p logs
 
 echo "Job ID:    $SLURM_JOB_ID"
 echo "Node:      $SLURMD_NODENAME"
+echo "GPU:       $CUDA_VISIBLE_DEVICES"
 echo "Start:     $(date)"
 
 # ─── Training ───────────────────────────────────────────────────────────────
-cd "$(dirname "$0")/cifar10"
+# Run download_cifar10.sh on the login node before submitting this job.
+# Dataset is expected at /home/fritzsche/cifar10/ (set in cifar10.yml).
+cd /work/fritzsche6/qkformer/repo/cifar10
 
-# Data path is set inside cifar10.yml — edit that file if needed.
-# Default config already uses 400 epochs; reduce here if desired.
 python train.py \
   --config cifar10.yml \
   --epochs 200
