@@ -4,9 +4,7 @@
 #SBATCH --exclude=multigpu
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
 #SBATCH --gres=gpu:1               # single V100 or A100 is enough for CIFAR-10
-#SBATCH --mem=32G
 #SBATCH --time=0-12:00:00          # 12 hours is more than enough
 #SBATCH --output=logs/qkformer_cifar10_%j.out
 #SBATCH --error=logs/qkformer_cifar10_%j.err
