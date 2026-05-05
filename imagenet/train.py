@@ -322,7 +322,7 @@ def main(args):
         if args.output_dir:
             misc.save_model(
                 args=args, model=model, model_without_ddp=model_without_ddp, optimizer=optimizer,
-                loss_scaler=loss_scaler, epoch='latest')
+                loss_scaler=loss_scaler, epoch=epoch, save_name='latest')
 
         if epoch > int(args.epochs - 20) and test_stats["acc1"] > max_accuracy:
             if args.output_dir:

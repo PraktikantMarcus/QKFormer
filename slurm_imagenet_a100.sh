@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=qkformer_imagenet
-#SBATCH --partition=gpu            # check with your HPC admin — n-hpc-gz6 may be in a different partition
+#SBATCH --partition=gpu            
 #SBATCH --nodelist=n-hpc-gz6       # 4× A100 SXM4 40GB
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
