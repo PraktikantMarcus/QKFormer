@@ -24,9 +24,9 @@ echo "Start:     $(date)"
 # ─── Training ───────────────────────────────────────────────────────────────
 # Run download_cifar10dvs.sh on the login node before submitting this job.
 # Processed frames are expected at /nfsscratch/fritzsche/cifar10dvs/.
-cd /work/fritzsche6/qkformer/repo/cifar10-dvs
+cd /home/fritzsche/QKFormer/cifar10-dvs
 
-python train.py \
+torchrun --standalone --nproc_per_node=1 train.py \
   --data-path /nfsscratch/fritzsche/cifar10dvs \
   --epochs 96 \
   --batch-size 16 \
