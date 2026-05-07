@@ -27,11 +27,11 @@ echo "Start:     $(date)"
 cd /home/fritzsche/QKFormer/cifar10-dvs
 
 torchrun --standalone --nproc_per_node=1 train.py \
+  --model QKFormer \
   --data-path /nfsscratch/fritzsche/cifar10dvs \
   --epochs 96 \
   --batch-size 16 \
   --T 16 \
-  --device cuda \
-  --output-dir ./logs
+  --device cuda
 
 echo "End: $(date)"

@@ -1,3 +1,4 @@
+import csv
 import datetime
 import os
 import time
@@ -46,7 +47,7 @@ def parse_args():
                         help='number of data loading workers (default: 4)')
 
     parser.add_argument('--print-freq', default=256, type=int, help='print frequency')
-    parser.add_argument('--output-dir', default='./logs', help='path where to save')
+    parser.add_argument('--output-dir', default='./output', help='path where to save')
     parser.add_argument('--resume', default='', help='resume from checkpoint')
     parser.add_argument(
         "--sync-bn",
@@ -466,6 +467,14 @@ def main(args):
                 te_tb_writer.add_scalar('test_acc1', test_acc1, epoch)
                 te_tb_writer.add_scalar('test_acc5', test_acc5, epoch)
 
+        if utils.is_main_process() and output_dir:
+            csv_path = os.path.join(output_dir, 'summary.csv')
+            write_header = not os.path.exists(csv_path)
+            with open(csv_path, 'a', newline='') as f:
+                cw = csv.DictWriter(f, fieldnames=['epoch', 'train_loss', 'train_acc1', 'train_acc5', 'test_loss', 'test_acc1', 'test_acc5'])
+                if write_header:
+                    cw.writeheader()
+                cw.writerow({'epoch': epoch, 'train_loss': round(train_loss, 6), 'train_acc1': round(train_acc1, 4), 'train_acc5': round(train_acc5, 4), 'test_loss': round(test_loss, 6), 'test_acc1': round(test_acc1, 4), 'test_acc5': round(test_acc5, 4)})
 
         if max_test_acc1 < test_acc1:
             max_test_acc1 = test_acc1
@@ -499,6 +508,26 @@ def main(args):
         utils.save_on_master(
             checkpoint,
             os.path.join(output_dir, f'checkpoint_{epoch}.pth'))
+
+    if utils.is_main_process() and output_dir:
+        all_runs_path = os.path.join(args.output_dir, 'all_runs.csv')
+        write_header = not os.path.exists(all_runs_path)
+        with open(all_runs_path, 'a', newline='') as f:
+            cw = csv.DictWriter(f, fieldnames=['timestamp', 'model', 'epochs', 'batch_size', 'T', 'lr', 'weight_decay', 'best_acc1', 'best_acc5', 'run_dir'])
+            if write_header:
+                cw.writeheader()
+            cw.writerow({
+                'timestamp': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'model': args.model,
+                'epochs': num_epochs,
+                'batch_size': args.batch_size,
+                'T': args.T,
+                'lr': args.lr,
+                'weight_decay': args.weight_decay,
+                'best_acc1': round(max_test_acc1, 4),
+                'best_acc5': round(test_acc5_at_max_test_acc1, 4),
+                'run_dir': output_dir,
+            })
 
     return max_test_acc1
 
