@@ -8,7 +8,7 @@
 
 set -e
 
-DATA_DIR="/home/fritzsche/cifar10dvs"
+DATA_DIR="/nfsscratch/fritzsche/cifar10dvs"
 mkdir -p "$DATA_DIR"
 
 source /home/fritzsche/qkformer/bin/activate
