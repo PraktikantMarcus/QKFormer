@@ -9,8 +9,11 @@ __pycache__/
 # Training outputs (large files, not for version control)
 imagenet/output*/
 cifar100/output/
+cifar10/output/
 imagenet/logs/
 cifar100/logs/
+cifar10/logs/
+logs/
 imagenet/wget-log
 
 # Checkpoints
