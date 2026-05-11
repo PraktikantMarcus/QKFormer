@@ -491,6 +491,9 @@ def main(args):
                 utils.save_on_master(
                     checkpoint,
                     os.path.join(output_dir, 'checkpoint_max_test_acc1.pth'))
+            utils.save_on_master(
+                checkpoint,
+                os.path.join(output_dir, 'checkpoint_latest.pth'))
         print(args)
         total_time = time.time() - start_time
         total_time_str = str(datetime.timedelta(seconds=int(total_time)))
