@@ -20,21 +20,29 @@
 set -e
 
 DATA_DIR="/work/fritzsche6/qkformer/dvs128gesture"
-TARBALL="$DATA_DIR/DvsGesture.tar.gz"
+# spikingjelly looks for the tarball specifically in the download/ subdirectory
+DOWNLOAD_DIR="$DATA_DIR/download"
+TARBALL="$DOWNLOAD_DIR/DvsGesture.tar.gz"
+
+mkdir -p "$DOWNLOAD_DIR"
 
 # ─── Sanity check ───────────────────────────────────────────────────────────
+# Also handle the case where the file was placed directly in DATA_DIR
+if [ -f "$DATA_DIR/DvsGesture.tar.gz" ] && [ ! -f "$TARBALL" ]; then
+    echo "Moving DvsGesture.tar.gz into download/ subdirectory..."
+    mv "$DATA_DIR/DvsGesture.tar.gz" "$TARBALL"
+fi
+
 if [ ! -f "$TARBALL" ]; then
     echo "ERROR: $TARBALL not found."
     echo ""
     echo "Please download DvsGesture.tar.gz from IBM Box first:"
     echo "  https://ibm.ent.box.com/s/3hiq58ww1pbbjrinh367ykfdf60xsfm8"
     echo ""
-    echo "Then transfer it to the HPC:"
-    echo "  scp DvsGesture.tar.gz fritzsche6@<up-hpc-login>:$DATA_DIR/"
+    echo "Then transfer it to the HPC into the download/ subdirectory:"
+    echo "  scp DvsGesture.tar.gz fritzsche6@<up-hpc-login>:$DOWNLOAD_DIR/"
     exit 1
 fi
-
-mkdir -p "$DATA_DIR"
 
 # ─── Environment ────────────────────────────────────────────────────────────
 module load system/CUDA/11.6.0
