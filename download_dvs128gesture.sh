@@ -1,7 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=dvs128_prep
-#SBATCH --partition=gpu
-#SBATCH --nodelist=n-hpc-gz6
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
@@ -78,7 +76,7 @@ DATA_DIR = "/work/fritzsche6/qkformer/dvs128gesture"
 FRAMES_DIR = os.path.join(DATA_DIR, "DVS128Gesture", "frames_number_16_split_by_number")
 
 def count_npy(d):
-    return sum(1 for _ in Path(d).rglob("*.npy")) if os.path.isdir(d) else 0
+    return sum(1 for _ in Path(d).rglob("*.npz")) if os.path.isdir(d) else 0
 
 stop = threading.Event()
 
