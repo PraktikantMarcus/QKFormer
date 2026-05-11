@@ -10,6 +10,7 @@ __pycache__/
 imagenet/output*/
 cifar100/output/
 cifar10/output/
+cifar10-dvs/output/
 imagenet/logs/
 cifar100/logs/
 cifar10/logs/
