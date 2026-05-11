@@ -1,5 +1,16 @@
 #!/bin/bash
-# Run this script on the UP HPC login node BEFORE submitting slurm_dvs128gesture_a100.sh.
+#SBATCH --job-name=dvs128_prep
+#SBATCH --partition=gpu
+#SBATCH --nodelist=n-hpc-gz6
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=32G
+#SBATCH --time=0-01:00:00
+#SBATCH --output=/work/fritzsche6/qkformer/repo/download_dvs128gesture_%j.out
+#SBATCH --error=/work/fritzsche6/qkformer/repo/download_dvs128gesture_%j.err
+# Submit with: sbatch download_dvs128gesture.sh
+# Run this script BEFORE submitting slurm_dvs128gesture_a100.sh.
 #
 # DVS128 Gesture cannot be downloaded automatically — IBM requires a manual
 # request. Follow these steps:
@@ -57,32 +68,59 @@ echo "Converting DVS128 Gesture events to T=16 frames..."
 echo "Data dir: $DATA_DIR"
 echo "Start: $(date)"
 
-python - <<EOF
+python - <<'EOF'
+import os, sys, threading, time, contextlib
+from pathlib import Path
+from tqdm import tqdm
 from spikingjelly.datasets import dvs128_gesture
 
-print("Processing train split...")
-train_set = dvs128_gesture.DVS128Gesture(
-    root="$DATA_DIR",
-    train=True,
-    data_type='frame',
-    frames_number=16,
-    split_by='number'
-)
-print(f"  Train samples: {len(train_set)}")
+DATA_DIR = "/work/fritzsche6/qkformer/dvs128gesture"
+FRAMES_DIR = os.path.join(DATA_DIR, "DVS128Gesture", "frames_number_16_split_by_number")
 
-print("Processing test split...")
-test_set = dvs128_gesture.DVS128Gesture(
-    root="$DATA_DIR",
-    train=False,
-    data_type='frame',
-    frames_number=16,
-    split_by='number'
-)
-print(f"  Test samples:  {len(test_set)}")
+def count_npy(d):
+    return sum(1 for _ in Path(d).rglob("*.npy")) if os.path.isdir(d) else 0
 
-print("")
-print("Done! Frames cached at:")
-print("  $DATA_DIR/DVS128Gesture/frames_number_16_split_by_number/")
+stop = threading.Event()
+
+def monitor(desc):
+    with tqdm(desc=desc, unit=" files", dynamic_ncols=True, file=sys.stdout) as bar:
+        prev = 0
+        while not stop.is_set():
+            n = count_npy(FRAMES_DIR)
+            if n > prev:
+                bar.update(n - prev)
+                prev = n
+            time.sleep(1)
+        # Final flush
+        n = count_npy(FRAMES_DIR)
+        if n > prev:
+            bar.update(n - prev)
+
+# ── Train split ──────────────────────────────────────────────────────────────
+tqdm.write("Processing train split...")
+stop.clear()
+t = threading.Thread(target=monitor, args=("  train frames",), daemon=True)
+t.start()
+with open(os.devnull, "w") as null, contextlib.redirect_stdout(null):
+    train_set = dvs128_gesture.DVS128Gesture(
+        root=DATA_DIR, train=True, data_type="frame", frames_number=16, split_by="number"
+    )
+stop.set(); t.join()
+tqdm.write(f"  => {len(train_set)} samples")
+
+# ── Test split ───────────────────────────────────────────────────────────────
+tqdm.write("Processing test split...")
+stop.clear()
+t = threading.Thread(target=monitor, args=("  test frames",), daemon=True)
+t.start()
+with open(os.devnull, "w") as null, contextlib.redirect_stdout(null):
+    test_set = dvs128_gesture.DVS128Gesture(
+        root=DATA_DIR, train=False, data_type="frame", frames_number=16, split_by="number"
+    )
+stop.set(); t.join()
+tqdm.write(f"  => {len(test_set)} samples")
+
+tqdm.write(f"\nFrames cached at: {FRAMES_DIR}")
 EOF
 
 echo "End: $(date)"
